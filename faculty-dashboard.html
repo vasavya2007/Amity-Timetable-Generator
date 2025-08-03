@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty Dashboard - TimeTable Generator</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+        
+        .logout-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s ease;
+        }
+        
+        .logout-btn:hover {
+            background: #c0392b;
+        }
+        
+        .welcome-text {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .draft-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .draft-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s ease;
+        }
+
+        .save-draft-btn {
+            background: #27ae60;
+            color: white;
+        }
+
+        .save-draft-btn:hover {
+            background: #229954;
+        }
+
+        .clear-draft-btn {
+            background: #f39c12;
+            color: white;
+        }
+
+        .clear-draft-btn:hover {
+            background: #e67e22;
+        }
+
+        .availability-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .unavailable-slot {
+            background-color: #ffebee !important;
+            color: #c62828 !important;
+            font-weight: bold;
+        }
+
+        .draft-notification {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .draft-notification.show {
+            display: block;
+        }
+
+        .draft-notification button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="header-container">
+        <header>FACULTY DASHBOARD</header>
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <span class="welcome-text" id="welcomeText">Welcome, Faculty!</span>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <div id="draftNotification" class="draft-notification">
+        <span>You have a saved draft. Would you like to continue where you left off?</span>
+        <button onclick="loadDraft()">Load Draft</button>
+        <button onclick="clearDraft()">Clear Draft</button>
+    </div>
+
+    <div class="section">
+        <h2>Faculty Information</h2>
+        <div class="form-group">
+            <label>Name:</label>
+            <input type="text" id="faculty-name" readonly>
+        </div>
+        <div class="form-group">
+            <label>Faculty ID:</label>
+            <input type="text" id="faculty-id" readonly>
+        </div>
+        <div class="form-group">
+            <label>Department:</label>
+            <input type="text" id="faculty-dept" readonly>
+        </div>
+    </div>
+
+    <div class="draft-controls">
+        <button class="draft-btn save-draft-btn" onclick="saveDraft()">Save Draft</button>
+        <button class="draft-btn clear-draft-btn" onclick="clearDraft()">Clear Draft</button>
+    </div>
+
+    <div id="errors" class="error"></div>
+
+    <div class="section">
+        <h2>My Assigned Subjects</h2>
+        <div style="display: flex;">
+            <div style="flex: 1; margin-right: 20px;">
+                <h3>Theory Slots</h3>
+                <div id="faculty-theory-slots"></div>
+            </div>
+            <div style="flex: 1;">
+                <h3>Lab Slots</h3>
+                <div id="faculty-lab-slots"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Availability Management</h2>
+        <p>Toggle slots to mark them as unavailable:</p>
+        <div id="availability-controls"></div>
+    </div>
+
+    <div class="section">
+        <h2>My Timetable</h2>
+        <table id="faculty-timetable">
+            <thead>
+                <tr>
+                    <th>Theory Hours</th>
+                    <th>9:00-9:50</th>
+                    <th>9:55-10:45</th>
+                    <th>10:50-11:40</th>
+                    <th>11:45-12:35</th>
+                    <th rowspan="2">Lunch 12:35-1:15</th>
+                    <th>1:15-2:05</th>
+                    <th>2:10-3:00</th>
+                    <th>3:05-3:55</th>
+                    <th>4:00-4:50</th>
+                </tr>
+                <tr>
+                    <th>Lab Hours</th>
+                    <th colspan="2">9:00-10:40</th>
+                    <th colspan="2">10:50-12:30</th>
+                    <th colspan="2">1:15-2:55</th>
+                    <th colspan="2">3:05-4:45</th>
+                </tr>
+            </thead>
+            <tbody id="faculty-timetable-body"></tbody>
+        </table>
+    </div>
+
+    <button onclick="submitFacultyTimetable()">Submit Availability</button>
+
+    <div id="modal">
+        <div class="modal-content">
+            <h2>Faculty Availability Summary</h2>
+            <div id="modal-faculty-info"></div>
+            <table id="modal-faculty-timetable">
+                <thead>
+                    <tr>
+                        <th>Theory Hours</th>
+                        <th>9:00-9:50</th>
+                        <th>9:55-10:45</th>
+                        <th>10:50-11:40</th>
+                        <th>11:45-12:35</th>
+                        <th rowspan="2">Lunch 12:35-1:15</th>
+                        <th>1:15-2:05</th>
+                        <th>2:10-3:00</th>
+                        <th>3:05-3:55</th>
+                        <th>4:00-4:50</th>
+                    </tr>
+                    <tr>
+                        <th>Lab Hours</th>
+                        <th colspan="2">9:00-10:40</th>
+                        <th colspan="2">10:50-12:30</th>
+                        <th colspan="2">1:15-2:55</th>
+                        <th colspan="2">3:05-4:45</th>
+                    </tr>
+                </thead>
+                <tbody id="modal-faculty-timetable-body"></tbody>
+            </table>
+            <button onclick="closeModal()">Close</button>
+        </div>
+    </div>
+
+    <script src="faculty-script.js"></script>
+    <script>
+        // Authentication check
+        window.onload = function() {
+            // Check if user is logged in and is faculty
+            if (sessionStorage.getItem('isLoggedIn') !== 'true' || sessionStorage.getItem('loggedInRole') !== 'faculty') {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // Update welcome text with faculty ID
+            const facultyId = sessionStorage.getItem('loggedInUserId');
+            if (facultyId) {
+                document.getElementById('welcomeText').textContent = `Welcome, Faculty ${facultyId}!`;
+                document.getElementById('faculty-id').value = facultyId;
+            }
+
+            // Load faculty information
+            loadFacultyInfo();
+            
+            // Check for existing draft
+            checkForDraft();
+        }
+        
+        // Logout function
+        function logout() {
+            sessionStorage.removeItem('isLoggedIn');
+            sessionStorage.removeItem('loggedInUserId');
+            sessionStorage.removeItem('loggedInRole');
+            window.location.href = 'login.html';
+        }
+
+        function loadFacultyInfo() {
+            const facultyId = sessionStorage.getItem('loggedInUserId');
+            
+            // Faculty database - in a real app, this would come from a server
+            const facultyDatabase = {
+                'F001': {
+                    name: 'Dr. P. Senthil Kumar',
+                    department: 'Mathematics',
+                    subjects: ['MAT1002'],
+                    slots: ['A1-1', 'A1-2', 'A1-3']
+                },
+                'F002': {
+                    name: 'Mrs. Anughna N',
+                    department: 'Electronics',
+                    subjects: ['ECE1001'],
+                    slots: ['B1-1', 'B1-2', 'B1-3', 'L3+L4', 'L21+L22', 'L31+L32']
+                },
+                'F003': {
+                    name: 'Dr. Ravi.J',
+                    department: 'Mathematics',
+                    subjects: ['MAT1002'],
+                    slots: ['C1-1', 'C1-2', 'C1-3']
+                }
+            };
+
+            const facultyInfo = facultyDatabase[facultyId] || {
+                name: 'Faculty Member',
+                department: 'General',
+                subjects: [],
+                slots: []
+            };
+
+            document.getElementById('faculty-name').value = facultyInfo.name;
+            document.getElementById('faculty-dept').value = facultyInfo.department;
+        }
+
+        function checkForDraft() {
+            const facultyId = sessionStorage.getItem('loggedInUserId');
+            const draftKey = `faculty_draft_${facultyId}`;
+            const draft = localStorage.getItem(draftKey);
+            
+            if (draft) {
+                document.getElementById('draftNotification').classList.add('show');
+            }
+        }
+
+        function loadDraft() {
+            const facultyId = sessionStorage.getItem('loggedInUserId');
+            const draftKey = `faculty_draft_${facultyId}`;
+            const draft = localStorage.getItem(draftKey);
+            
+            if (draft) {
+                const draftData = JSON.parse(draft);
+                // Load draft data into the faculty script
+                if (window.loadFacultyDraft) {
+                    window.loadFacultyDraft(draftData);
+                }
+                document.getElementById('draftNotification').classList.remove('show');
+            }
+        }
+
+        function saveDraft() {
+            const facultyId = sessionStorage.getItem('loggedInUserId');
+            const draftKey = `faculty_draft_${facultyId}`;
+            
+            // Get current state from faculty script
+            if (window.getFacultyDraftData) {
+                const draftData = window.getFacultyDraftData();
+                localStorage.setItem(draftKey, JSON.stringify(draftData));
+                alert('Draft saved successfully!');
+            }
+        }
+
+        function clearDraft() {
+            const facultyId = sessionStorage.getItem('loggedInUserId');
+            const draftKey = `faculty_draft_${facultyId}`;
+            localStorage.removeItem(draftKey);
+            document.getElementById('draftNotification').classList.remove('show');
+            
+            // Clear current selections
+            if (window.clearFacultySelections) {
+                window.clearFacultySelections();
+            }
+            
+            alert('Draft cleared successfully!');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+    </script>
+</body>
+</html> 
