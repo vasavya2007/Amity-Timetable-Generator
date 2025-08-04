@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin - Semester Data Manager</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2em; }
+    .admin-form, .admin-list { margin-bottom: 2em; }
+    label { display: block; margin-top: 1em; }
+    input, select { width: 100%; padding: 0.5em; }
+    table { border-collapse: collapse; width: 100%; margin-top: 1em; }
+    th, td { border: 1px solid #ccc; padding: 0.5em; }
+    .actions button { margin-right: 0.5em; }
+  </style>
+</head>
+<body>
+  <h1>Admin: Semester Data Manager</h1>
+  <div id="login-section">
+    <label>Admin Password: <input type="password" id="admin-password"></label>
+    <button onclick="adminLogin()">Login</button>
+    <div id="login-error" style="color:red"></div>
+  </div>
+  <div id="admin-section" style="display:none">
+    <h2>Add/Edit Course</h2>
+    <form class="admin-form" onsubmit="saveCourse(event)">
+      <input type="hidden" id="edit-index">
+      <label>Course Code: <input id="course-code" required></label>
+      <label>Title: <input id="course-title" required></label>
+      <label>Faculty: <input id="course-faculty" required></label>
+      <label>Room: <input id="course-room" required></label>
+      <label>Slot(s): <input id="course-slots" placeholder="e.g. A1-1, L3+L4" required></label>
+      <label>Tags: 
+        <select id="course-tags" multiple>
+          <option value="OE">Open Elective</option>
+          <option value="DE">Department Elective</option>
+        </select>
+      </label>
+      <button type="submit">Save</button>
+      <button type="button" onclick="resetForm()">Clear</button>
+    </form>
+    <h2>All Courses</h2>
+    <div class="admin-list">
+      <table id="courses-table">
+        <thead>
+          <tr>
+            <th>Code</th><th>Title</th><th>Faculty</th><th>Room</th><th>Slots</th><th>Tags</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <button onclick="exportJSON()">Export as JSON</button>
+    <input type="file" id="import-file" style="display:none" onchange="importJSON(event)">
+    <button onclick="document.getElementById('import-file').click()">Import JSON</button>
+    <button onclick="clearAllData()">Clear All Data</button>
+    <a id="download-link" style="display:none"></a>
+  </div>
+  <script>
+    // --- Admin Auth ---
+    function adminLogin() {
+      const pwd = document.getElementById('admin-password').value;
+      if (pwd === 'admin123') { // Change this password as needed
+        document.getElementById('login-section').style.display = 'none';
+        document.getElementById('admin-section').style.display = '';
+        loadCourses();
+      } else {
+        document.getElementById('login-error').textContent = 'Incorrect password!';
+      }
+    }
+
+    // --- Data Model ---
+    function getCourses() {
+      return JSON.parse(localStorage.getItem('courses') || '[]');
+    }
+    function setCourses(courses) {
+      localStorage.setItem('courses', JSON.stringify(courses));
+    }
+
+    // --- CRUD ---
+    function saveCourse(e) {
+      e.preventDefault();
+      const code = document.getElementById('course-code').value.trim();
+      const title = document.getElementById('course-title').value.trim();
+      const faculty = document.getElementById('course-faculty').value.trim();
+      const room = document.getElementById('course-room').value.trim();
+      const slots = document.getElementById('course-slots').value.trim().split(',').map(s => s.trim());
+      const tags = Array.from(document.getElementById('course-tags').selectedOptions).map(o => o.value);
+      let courses = getCourses();
+      const editIndex = document.getElementById('edit-index').value;
+      const course = { code, title, faculty, room, slots, tags };
+      if (editIndex) {
+        courses[editIndex] = course;
+      } else {
+        courses.push(course);
+      }
+      setCourses(courses);
+      resetForm();
+      loadCourses();
+    }
+    function loadCourses() {
+      const courses = getCourses();
+      const tbody = document.querySelector('#courses-table tbody');
+      tbody.innerHTML = '';
+      courses.forEach((c, i) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${c.code}</td>
+          <td>${c.title}</td>
+          <td>${c.faculty}</td>
+          <td>${c.room}</td>
+          <td>${c.slots.join(', ')}</td>
+          <td>${c.tags.join(', ')}</td>
+          <td class="actions">
+            <button onclick="editCourse(${i})">Edit</button>
+            <button onclick="deleteCourse(${i})">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+    function editCourse(i) {
+      const c = getCourses()[i];
+      document.getElementById('edit-index').value = i;
+      document.getElementById('course-code').value = c.code;
+      document.getElementById('course-title').value = c.title;
+      document.getElementById('course-faculty').value = c.faculty;
+      document.getElementById('course-room').value = c.room;
+      document.getElementById('course-slots').value = c.slots.join(', ');
+      Array.from(document.getElementById('course-tags').options).forEach(opt => {
+        opt.selected = c.tags.includes(opt.value);
+      });
+    }
+    function deleteCourse(i) {
+      if (!confirm('Delete this course?')) return;
+      let courses = getCourses();
+      courses.splice(i, 1);
+      setCourses(courses);
+      loadCourses();
+    }
+    function resetForm() {
+      document.querySelector('.admin-form').reset();
+      document.getElementById('edit-index').value = '';
+    }
+    function clearAllData() {
+      if (!confirm('Clear ALL courses?')) return;
+      setCourses([]);
+      loadCourses();
+    }
+
+    // --- Export/Import ---
+    function exportJSON() {
+      const data = JSON.stringify(getCourses(), null, 2);
+      const blob = new Blob([data], {type: 'application/json'});
+      const url = URL.createObjectURL(blob);
+      const link = document.getElementById('download-link');
+      link.href = url;
+      link.download = 'courses.json';
+      link.style.display = '';
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+    function importJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (Array.isArray(data)) {
+            setCourses(data);
+            loadCourses();
+            alert('Import successful!');
+          } else {
+            alert('Invalid JSON format.');
+          }
+        } catch {
+          alert('Invalid JSON file.');
+        }
+      };
+      reader.readAsText(file);
+    }
+  </script>
+</body>
+</html>
