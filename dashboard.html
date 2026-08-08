@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TimeTable Generator - Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f0f0f0;
+        }
+        h1, h2, h3 {
+            color: #333;
+        }
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logout-link {
+            font-size: 13px;
+            color: #0066cc;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        .section {
+            background: white;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+        }
+        .student-info-bar {
+            display: flex;
+            gap: 25px;
+            flex-wrap: wrap;
+            font-size: 14px;
+        }
+        .student-info-bar span strong {
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 10px;
+        }
+        .form-group label {
+            display: inline-block;
+            width: 150px;
+        }
+        .form-group input, .form-group select {
+            padding: 5px;
+            width: 200px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #999;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background: #e0e0e0;
+        }
+        .theory-row {
+            background: #ffffff;
+        }
+        .lab-row {
+            background: #ffe6e6;
+        }
+        .error {
+            color: red;
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            background: #0066cc;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0055aa;
+        }
+        #modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000; /* Ensure modal is on top */
+        }
+        .modal-content {
+            background: white;
+            padding: 20px;
+            max-width: 90%;
+            max-height: 80%;
+            overflow: auto;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <h1>TimeTable Generator</h1>
+        <span class="logout-link" onclick="logout()">Log out</span>
+    </div>
+
+    <div class="section">
+        <h2>Student Information</h2>
+        <div class="student-info-bar">
+            <span><strong>Name:</strong> <span id="info-name"></span></span>
+            <span><strong>Enrollment Number:</strong> <span id="info-enrollment"></span></span>
+            <span><strong>Course:</strong> <span id="info-course"></span></span>
+        </div>
+    </div>
+
+    <div id="errors" class="error"></div>
+
+    <div class="section">
+        <h2>Select Subjects</h2>
+        <div style="display: flex;">
+            <div style="flex: 1; margin-right: 20px;">
+                <h3>Theory Slots</h3>
+                <div id="theory-slots"></div>
+            </div>
+            <div style="flex: 1;">
+                <h3>Lab Slots</h3>
+                <div id="lab-slots"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Your Timetable</h2>
+        <table id="timetable">
+            <thead>
+                <tr>
+                    <th>Theory Hours</th>
+                    <th>9:00-9:50</th>
+                    <th>9:55-10:45</th>
+                    <th>10:50-11:40</th>
+                    <th>11:45-12:35</th>
+                    <th rowspan="2">Lunch 12:35-1:15</th>
+                    <th>1:15-2:05</th>
+                    <th>2:10-3:00</th>
+                    <th>3:05-3:55</th>
+                    <th>4:00-4:50</th>
+                </tr>
+                <tr>
+                    <th>Lab Hours</th>
+                    <th colspan="2">9:00-10:40</th>
+                    <th colspan="2">10:50-12:30</th>
+                    <th colspan="2">1:15-2:55</th>
+                    <th colspan="2">3:05-4:45</th>
+                </tr>
+            </thead>
+            <tbody id="timetable-body"></tbody>
+        </table>
+    </div>
+
+    <button onclick="submitTimetable()">Submit Timetable</button>
+
+    <div id="modal">
+        <div class="modal-content">
+            <h2>Final Timetable</h2>
+            <div id="modal-student-info"></div>
+            <table id="modal-timetable">
+                <thead>
+                    <tr>
+                        <th>Theory Hours</th>
+                        <th>9:00-9:50</th>
+                        <th>9:55-10:45</th>
+                        <th>10:50-11:40</th>
+                        <th>11:45-12:35</th>
+                        <th>Lunch 12:35-1:15</th>
+                        <th>1:15-2:05</th>
+                        <th>2:10-3:00</th>
+                        <th>3:05-3:55</th>
+                        <th>4:00-4:50</th>
+                    </tr>
+                    <tr>
+                        <th>Lab Hours</th>
+                        <th colspan="2">9:00-10:40</th>
+                        <th colspan="2">10:50-12:30</th>
+                        <th>Lunch 12:35-1:15</th>
+                        <th colspan="2">1:15-2:55</th>
+                        <th colspan="2">3:05-4:45</th>
+                    </tr>
+                </thead>
+                <tbody id="modal-timetable-body"></tbody>
+            </table>
+            <button onclick="closeModal()">Close</button>
+        </div>
+    </div>
+
+    <script>
+        // --- Auth guard: pull student info from the URL that login.html sent us ---
+        const urlParams = new URLSearchParams(window.location.search);
+        const studentName = urlParams.get('name');
+        const studentEnrollment = urlParams.get('enrollment');
+        const studentCourse = urlParams.get('course');
+
+        if (!studentName || !studentEnrollment || !studentCourse) {
+            // No student info present - bounce back to login
+            window.location.href = 'login.html';
+        }
+
+        function logout() {
+            window.location.href = 'login.html';
+        }
+
+        const slotMapping = { 'A1-1': { day: 'Monday', type: 'Theory', timeIndex: 1, start: 540, end: 590, linked: ['A1-2', 'A1-3'], period: 'Morning' }, 'F1-1': { day: 'Monday', type: 'Theory', timeIndex: 2, start: 595, end: 645, linked: ['F1-2'], period: 'Morning' }, 'D1-1': { day: 'Monday', type: 'Theory', timeIndex: 3, start: 650, end: 700, linked: ['D1-2'], period: 'Morning' }, 'TC1': { day: 'Monday', type: 'Theory', timeIndex: 4, start: 705, end: 755, linked: [], period: 'Morning' }, 'A2-1': { day: 'Monday', type: 'Theory', timeIndex: 5, start: 795, end: 845, linked: ['A2-2', 'A2-3'], period: 'Afternoon' }, 'F2-1': { day: 'Monday', type: 'Theory', timeIndex: 6, start: 850, end: 900, linked: ['F2-2'], period: 'Afternoon' }, 'D2-1': { day: 'Monday', type: 'Theory', timeIndex: 7, start: 905, end: 955, linked: ['D2-2'], period: 'Afternoon' }, 'TC2': { day: 'Monday', type: 'Theory', timeIndex: 8, start: 960, end: 1010, linked: [], period: 'Afternoon' }, 'L1+L2': { day: 'Monday', type: 'Lab', timeIndex: 1, colspan: 2, start: 540, end: 640, linked: [] }, 'L3+L4': { day: 'Monday', type: 'Lab', timeIndex: 3, colspan: 2, start: 650, end: 750, linked: [] }, 'L21+L22': { day: 'Monday', type: 'Lab', timeIndex: 5, colspan: 2, start: 795, end: 895, linked: [] }, 'L23+L24': { day: 'Monday', type: 'Lab', timeIndex: 7, colspan: 2, start: 905, end: 1005, linked: [] }, 'B1-1': { day: 'Tuesday', type: 'Theory', timeIndex: 1, start: 540, end: 590, linked: ['B1-2', 'B1-3'], period: 'Morning' }, 'G1-1': { day: 'Tuesday', type: 'Theory', timeIndex: 2, start: 595, end: 645, linked: ['G1-2'], period: 'Morning' }, 'E1-1': { day: 'Tuesday', type: 'Theory', timeIndex: 3, start: 650, end: 700, linked: ['E1-2'], period: 'Morning' }, 'TA1': { day: 'Tuesday', type: 'Theory', timeIndex: 4, start: 705, end: 755, linked: [], period: 'Morning' }, 'B2-1': { day: 'Tuesday', type: 'Theory', timeIndex: 5, start: 795, end: 845, linked: ['B2-2', 'B2-3'], period: 'Afternoon' }, 'G2-1': { day: 'Tuesday', type: 'Theory', timeIndex: 6, start: 850, end: 900, linked: ['G2-2'], period: 'Afternoon' }, 'E2-1': { day: 'Tuesday', type: 'Theory', timeIndex: 7, start: 905, end: 955, linked: ['E2-2'], period: 'Afternoon' }, 'TA2': { day: 'Tuesday', type: 'Theory', timeIndex: 8, start: 960, end: 1010, linked: [], period: 'Afternoon' }, 'L5+L6': { day: 'Tuesday', type: 'Lab', timeIndex: 1, colspan: 2, start: 540, end: 640, linked: [] }, 'L7+L8': { day: 'Tuesday', type: 'Lab', timeIndex: 3, colspan: 2, start: 650, end: 750, linked: [] }, 'L25+L26': { day: 'Tuesday', type: 'Lab', timeIndex: 5, colspan: 2, start: 795, end: 895, linked: [] }, 'L27+L28': { day: 'Tuesday', type: 'Lab', timeIndex: 7, colspan: 2, start: 905, end: 1005, linked: [] }, 'C1-1': { day: 'Wednesday', type: 'Theory', timeIndex: 1, start: 540, end: 590, linked: ['C1-2', 'C1-3'], period: 'Morning' }, 'A1-2': { day: 'Wednesday', type: 'Theory', timeIndex: 2, start: 595, end: 645, linked: [], period: 'Morning' }, 'F1-2': { day: 'Wednesday', type: 'Theory', timeIndex: 3, start: 650, end: 700, linked: [], period: 'Morning' }, 'B1-2': { day: 'Wednesday', type: 'Theory', timeIndex: 4, start: 705, end: 755, linked: [], period: 'Morning' }, 'C2-1': { day: 'Wednesday', type: 'Theory', timeIndex: 5, start: 795, end: 845, linked: ['C2-2', 'C2-3'], period: 'Afternoon' }, 'A2-2': { day: 'Wednesday', type: 'Theory', timeIndex: 6, start: 850, end: 900, linked: [], period: 'Afternoon' }, 'F2-2': { day: 'Wednesday', type: 'Theory', timeIndex: 7, start: 905, end: 955, linked: [], period: 'Afternoon' }, 'B2-2': { day: 'Wednesday', type: 'Theory', timeIndex: 8, start: 960, end: 1010, linked: [], period: 'Afternoon' }, 'L9+L10': { day: 'Wednesday', type: 'Lab', timeIndex: 1, colspan: 2, start: 540, end: 640, linked: [] }, 'L11+L12': { day: 'Wednesday', type: 'Lab', timeIndex: 3, colspan: 2, start: 650, end: 750, linked: [] }, 'L29+L30': { day: 'Wednesday', type: 'Lab', timeIndex: 5, colspan: 2, start: 795, end: 895, linked: [] }, 'L31+L32': { day: 'Wednesday', type: 'Lab', timeIndex: 7, colspan: 2, start: 905, end: 1005, linked: [] }, 'D1-2': { day: 'Thursday', type: 'Theory', timeIndex: 1, start: 540, end: 590, linked: [], period: 'Morning' }, 'B1-3': { day: 'Thursday', type: 'Theory', timeIndex: 2, start: 595, end: 645, linked: [], period: 'Morning' }, 'G1-2': { day: 'Thursday', type: 'Theory', timeIndex: 3, start: 650, end: 700, linked: [], period: 'Morning' }, 'C1-2': { day: 'Thursday', type: 'Theory', timeIndex: 4, start: 705, end: 755, linked: [], period: 'Morning' }, 'D2-2': { day: 'Thursday', type: 'Theory', timeIndex: 5, start: 795, end: 845, linked: [], period: 'Afternoon' }, 'B2-3': { day: 'Thursday', type: 'Theory', timeIndex: 6, start: 850, end: 900, linked: [], period: 'Afternoon' }, 'G2-2': { day: 'Thursday', type: 'Theory', timeIndex: 7, start: 905, end: 955, linked: [], period: 'Afternoon' }, 'C2-2': { day: 'Thursday', type: 'Theory', timeIndex: 8, start: 960, end: 1010, linked: [], period: 'Afternoon' }, 'L13+L14': { day: 'Thursday', type: 'Lab', timeIndex: 1, colspan: 2, start: 540, end: 640, linked: [] }, 'L15+L16': { day: 'Thursday', type: 'Lab', timeIndex: 3, colspan: 2, start: 650, end: 750, linked: [] }, 'L33+L34': { day: 'Thursday', type: 'Lab', timeIndex: 5, colspan: 2, start: 795, end: 895, linked: [] }, 'L35+L36': { day: 'Thursday', type: 'Lab', timeIndex: 7, colspan: 2, start: 905, end: 1005, linked: [] }, 'E1-2': { day: 'Friday', type: 'Theory', timeIndex: 1, start: 540, end: 590, linked: [], period: 'Morning' }, 'C1-3': { day: 'Friday', type: 'Theory', timeIndex: 2, start: 595, end: 645, linked: [], period: 'Morning' }, 'A1-3': { day: 'Friday', type: 'Theory', timeIndex: 3, start: 650, end: 700, linked: [], period: 'Morning' }, 'TB1': { day: 'Friday', type: 'Theory', timeIndex: 4, start: 705, end: 755, linked: [], period: 'Morning' }, 'E2-2': { day: 'Friday', type: 'Theory', timeIndex: 5, start: 795, end: 845, linked: [], period: 'Afternoon' }, 'C2-3': { day: 'Friday', type: 'Theory', timeIndex: 6, start: 850, end: 900, linked: [], period: 'Afternoon' }, 'A2-3': { day: 'Friday', type: 'Theory', timeIndex: 7, start: 905, end: 955, linked: [], period: 'Afternoon' }, 'TB2': { day: 'Friday', type: 'Theory', timeIndex: 8, start: 960, end: 1010, linked: [], period: 'Afternoon' }, 'L17+L18': { day: 'Friday', type: 'Lab', timeIndex: 1, colspan: 2, start: 540, end: 640, linked: [] }, 'L19+L20': { day: 'Friday', type: 'Lab', timeIndex: 3, colspan: 2, start: 650, end: 750, linked: [] }, 'L37+L38': { day: 'Friday', type: 'Lab', timeIndex: 5, colspan: 2, start: 795, end: 895, linked: [] }, 'L39+L40': { day: 'Friday', type: 'Lab', timeIndex: 7, colspan: 2, start: 905, end: 1005, linked: [] } };
+
+        const subjectOptions = { 'A1-1': [{ course: 'MAT1002', faculty: ['Dr. P. Senthil Kumar', 'Ms. Swetha'] }], 'B1-1': [{ course: 'ECE1001', faculty: ['Mrs. Anughna N'] }], 'C1-1': [{ course: 'MAT1002', faculty: ['Dr. Ravi.J'] }], 'D1-1': [{ course: 'BIT1002', faculty: ['Mr.MD.Umar'] }], 'E1-1': [{ course: 'PHY1001', faculty: ['Dr.V.V.Jaiswal'] }], 'F1-1': [{ course: 'CHE1001', faculty: ['Smt.Shruthi.K.S'] }], 'G1-1': [{ course: 'CSE1017', faculty: ['Dr. Punam kumar'] }], 'A2-1': [{ course: 'KAN1004', faculty: ['Dr.Ashok Babu'] }], 'B2-1': [{ course: 'MAT1002', faculty: ['Ms.Thunga S'] }], 'C2-1': [{ course: 'ECE1001', faculty: ['Mrs. Bugide Sreevidya'] }], 'D2-1': [{ course: 'CSE1017', faculty: ['Dr. Rajat'] }], 'E2-1': [{ course: 'BIT1002', faculty: ['Dr.A Sanjeeva Kumar'] }], 'F2-1': [{ course: 'CSE2002', faculty: ['Dr.madhu bhan'] }], 'L1+L2': [{ course: 'PSY1002', faculty: ['Ms.Varshini S'] }], 'L3+L4': [{ course: 'ECE1001', faculty: ['Mrs. Anughna N'] }], 'L5+L6': [{ course: 'CSE2015', faculty: ['Dr.rajat'] }], 'L7+L8': [{ course: 'PHY1001', faculty: ['Dr.Lokesha HS'] }], 'L9+L10': [{ course: 'PSY1001', faculty: ['Ms. Shweta Singh'] }], 'L11+L12': [{ course: 'CSE1017', faculty: ['Mr.mohan'] }], 'L13+L14': [{ course: 'ENG1003', faculty: ['Mr.ramya M H'] }], 'L15+L16': [{ course: 'PHY1001', faculty: ['Dr.A.Balaksrishna'] }], 'L17+L18': [{ course: 'PSY1002', faculty: ['Ms.Varshini S'] }], 'L19+L20': [{ course: 'CSE1017', faculty: ['Dr.senthil kumar janagan'] }], 'L21+L22': [{ course: 'ECE1001', faculty: ['Mrs. Bugide Sreevidya'] }], 'L23+L24': [{ course: 'PHY1001', faculty: ['Dr.Nagabhushana KR'] }], 'L25+L26': [{ course: 'CSE2002', faculty: ['Dr.Arshpreet Kaur'] }], 'L27+L28': [{ course: 'CSE1017', faculty: ['Dr.Rajesh Kumar'] }], 'L29+L30': [{ course: 'PSY1001', faculty: ['Ms.Varshini S'] }], 'L31+L32': [{ course: 'ECE1001', faculty: ['Mrs. Anughna N'] }], 'L33+L34': [{ course: 'CSE2002', faculty: ['Dr.madhu bhan'] }], 'L35+L36': [{ course: 'ENG1003', faculty: ['Mr.Abirlal Mukherjee'] }], 'L37+L38': [{ course: 'CSE1017', faculty: ['Dr. Punam kumar'] }], 'L39+L40': [{ course: 'PHY1001', faculty: ['Dr.Lokesha HS'] }] };
+
+        let timetableData = {};
+        let lunchRowspanAdded = false;
+
+        // Global variable to store the last selected theory primary slot (e.g., 'A1-1')
+        let lastSelectedTheoryPrimarySlot = null;
+        // Global variable to store the last selected lab slot (e.g., 'L1+L2')
+        let lastSelectedLabSlot = null;
+
+        function init() {
+            renderStudentInfo();
+            renderSubjectSelectors();
+            renderTimetable(); // Initial render to show empty slots
+        }
+
+        function renderStudentInfo() {
+            document.getElementById('info-name').textContent = studentName;
+            document.getElementById('info-enrollment').textContent = studentEnrollment;
+            document.getElementById('info-course').textContent = studentCourse;
+        }
+
+        function renderSubjectSelectors() {
+            const theoryContainer = document.getElementById('theory-slots');
+            const labContainer = document.getElementById('lab-slots');
+
+            theoryContainer.innerHTML = '';
+            labContainer.innerHTML = '';
+
+            // THEORY DROPDOWNS (NESTED)
+            const theoryMainDiv = document.createElement('div');
+            theoryMainDiv.className = 'form-group';
+            theoryMainDiv.innerHTML = `<label>Theory Slots:</label>`;
+
+            const theoryPeriodSelect = document.createElement('select');
+            theoryPeriodSelect.id = 'theory-period-select';
+            theoryPeriodSelect.innerHTML = '<option value="">Select Period (Theory)</option>';
+            theoryPeriodSelect.innerHTML += '<option value="Morning">Morning</option>';
+            theoryPeriodSelect.innerHTML += '<option value="Afternoon">Afternoon</option>';
+            theoryMainDiv.appendChild(theoryPeriodSelect);
+
+            const theorySlotSelect = document.createElement('select');
+            theorySlotSelect.id = 'theory-slot-select';
+            theorySlotSelect.innerHTML = '<option value="">Select Slot</option>';
+            theorySlotSelect.disabled = true; // Disable until a period is selected
+            theoryMainDiv.appendChild(theorySlotSelect);
+
+            const theoryCourseFacultySelect = document.createElement('select');
+            theoryCourseFacultySelect.id = 'theory-course-faculty-select';
+            theoryCourseFacultySelect.innerHTML = '<option value="">Select Course & Faculty</option>';
+            theoryCourseFacultySelect.disabled = true; // Disable until a slot is selected
+            theoryMainDiv.appendChild(theoryCourseFacultySelect);
+
+            theoryContainer.appendChild(theoryMainDiv);
+
+            // Populate theorySlotSelect based on period selection
+            theoryPeriodSelect.onchange = () => {
+                const selectedPeriod = theoryPeriodSelect.value;
+                theorySlotSelect.innerHTML = '<option value="">Select Slot</option>';
+                theoryCourseFacultySelect.innerHTML = '<option value="">Select Course & Faculty</option>';
+                theoryCourseFacultySelect.disabled = true; // Disable course/faculty until new slot is chosen
+
+                if (selectedPeriod) {
+                    theorySlotSelect.disabled = false;
+                    const uniqueTheoryBaseSlots = new Set();
+                    Object.keys(slotMapping).forEach(slotKey => {
+                        const slotInfo = slotMapping[slotKey];
+                        if (slotInfo.type === 'Theory' && slotInfo.period === selectedPeriod) {
+                            // Extract base slot (e.g., A1 from A1-1)
+                            const baseSlot = slotKey.includes('-') ? slotKey.substring(0, slotKey.indexOf('-')) : slotKey;
+                            uniqueTheoryBaseSlots.add(baseSlot);
+                        }
+                    });
+
+                    Array.from(uniqueTheoryBaseSlots).sort().forEach(baseSlot => {
+                        const option = document.createElement('option');
+                        option.value = baseSlot;
+                        option.text = baseSlot;
+                        theorySlotSelect.appendChild(option);
+                    });
+                } else {
+                    theorySlotSelect.disabled = true;
+                }
+                // Clear last selected theory slot when period changes
+                lastSelectedTheoryPrimarySlot = null;
+            };
+
+            // Populate theoryCourseFacultySelect based on slot selection
+            theorySlotSelect.onchange = () => {
+                const selectedBaseSlot = theorySlotSelect.value;
+                theoryCourseFacultySelect.innerHTML = '<option value="">Select Course & Faculty</option>';
+                if (selectedBaseSlot) {
+                    theoryCourseFacultySelect.disabled = false;
+                    const primarySlotKey = `${selectedBaseSlot}-1`; // Assuming -1 is always the primary for theory
+                    lastSelectedTheoryPrimarySlot = primarySlotKey; // Store the primary slot key
+                    const optionsForThisSlot = subjectOptions[primarySlotKey];
+                    if (optionsForThisSlot) {
+                        optionsForThisSlot.forEach(({ course, faculty }) => {
+                            faculty.forEach(f => {
+                                const option = document.createElement('option');
+                                // Value includes the primary slot key and the combined course/faculty
+                                option.value = `${primarySlotKey}|${course} - ${f}`;
+                                option.text = `${course} - ${f}`;
+                                theoryCourseFacultySelect.appendChild(option);
+                            });
+                        });
+                    }
+                } else {
+                    theoryCourseFacultySelect.disabled = true;
+                    lastSelectedTheoryPrimarySlot = null;
+                }
+            };
+
+            // Handle final selection from theoryCourseFacultySelect
+            theoryCourseFacultySelect.onchange = (event) => {
+                const selectedValue = event.target.value;
+                if (selectedValue) {
+                    const [slotKey, courseAndFaculty] = selectedValue.split('|');
+                    handleSlotChange(slotKey, courseAndFaculty);
+                }
+                // Reset all theory dropdowns to default after selection to allow new selection
+                resetTheoryDropdowns();
+            };
+
+            // LAB DROPDOWN
+            const labDiv = document.createElement('div');
+            labDiv.className = 'form-group';
+            labDiv.innerHTML = `<label>Lab Slots:</label>`;
+            const labSelect = document.createElement('select');
+            labSelect.id = `slot-lab`;
+            labSelect.innerHTML = '<option value="">Select a Lab Slot</option>';
+
+            const allLabSlots = Object.keys(slotMapping).filter(key => slotMapping[key].type === 'Lab');
+
+            allLabSlots.forEach(slotKey => {
+                const optionsForThisSlot = subjectOptions[slotKey];
+                if (optionsForThisSlot) {
+                    optionsForThisSlot.forEach(({ course, faculty }) => {
+                        faculty.forEach(f => {
+                            const option = document.createElement('option');
+                            option.value = `${slotKey}|${course} - ${f}`;
+                            option.text = `${slotKey}: ${course} - ${f}`;
+                            labSelect.appendChild(option);
+                        });
+                    });
+                }
+            });
+
+            labSelect.onchange = (event) => {
+                const selectedValue = event.target.value;
+                if (selectedValue) {
+                    const [slotKey, courseAndFaculty] = selectedValue.split('|');
+                    lastSelectedLabSlot = slotKey; // Store the selected lab slot
+                    handleSlotChange(slotKey, courseAndFaculty);
+                }
+                // Reset lab dropdown to default after selection
+                resetLabDropdown();
+            };
+            labDiv.appendChild(labSelect);
+            labContainer.appendChild(labDiv);
+        }
+
+        // Helper function to reset theory dropdowns
+        function resetTheoryDropdowns() {
+            document.getElementById('theory-period-select').value = '';
+            document.getElementById('theory-slot-select').innerHTML = '<option value="">Select Slot</option>';
+            document.getElementById('theory-slot-select').disabled = true;
+            document.getElementById('theory-course-faculty-select').innerHTML = '<option value="">Select Course & Faculty</option>';
+            document.getElementById('theory-course-faculty-select').disabled = true;
+            lastSelectedTheoryPrimarySlot = null; // Clear the last selected primary slot
+        }
+
+        // Helper function to reset lab dropdown
+        function resetLabDropdown() {
+            const labSelect = document.getElementById('slot-lab');
+            if (labSelect) labSelect.value = '';
+            lastSelectedLabSlot = null; // Clear the last selected lab slot
+        }
+
+        function handleSlotChange(slotKeyToUpdate, value) {
+            const effectiveValue = value === '' ? 'None' : value;
+
+            let primarySlotKey = slotKeyToUpdate;
+            // This check is now mostly redundant but kept for safety/consistency if keys change
+            if (slotMapping[`${slotKeyToUpdate}-1`] && slotMapping[`${slotKeyToUpdate}-1`].type === 'Theory') {
+                primarySlotKey = `${slotKeyToUpdate}-1`;
+            }
+
+            const linkedSubSlots = (slotMapping[primarySlotKey] && slotMapping[primarySlotKey].linked) ? slotMapping[primarySlotKey].linked : [];
+
+            const allAffectedSlotKeys = [primarySlotKey, ...linkedSubSlots];
+
+            allAffectedSlotKeys.forEach(keyInMap => {
+                if (effectiveValue !== 'None') {
+                    timetableData[keyInMap] = [effectiveValue];
+                } else {
+                    timetableData[keyInMap] = ['None', ''];
+                }
+            });
+
+            validateSelections();
+        }
+
+        function doTimeSlotsOverlap(slot1, slot2) {
+            const slot1Info = slotMapping[slot1];
+            const slot2Info = slotMapping[slot2];
+            if (!slot1Info || !slot2Info) return false;
+            if (slot1Info.day !== slot2Info.day) return false;
+            return slot1Info.start < slot2Info.end && slot2Info.start < slot1Info.end;
+        }
+
+        function displayErrorModal(errors) {
+            const modal = document.getElementById('modal');
+            const modalTitle = modal.querySelector('.modal-content h2');
+            const studentInfoDiv = document.getElementById('modal-student-info');
+            const timetableInModal = document.getElementById('modal-timetable');
+
+            if (modalTitle) {
+                modalTitle.textContent = 'Validation Errors';
+            }
+            if (studentInfoDiv) {
+                studentInfoDiv.innerHTML = errors.map(e => `<p style="color: red; text-align: left;">- ${e}</p>`).join('');
+            }
+            if (timetableInModal) {
+                timetableInModal.style.display = 'none';
+            }
+
+            modal.style.display = 'flex';
+        }
+
+        function validateSelections() {
+            const errors = [];
+            const slotsToClear = new Set(); // Use a Set to store unique slots that need to be cleared
+
+            const selectedSlots = Object.keys(timetableData);
+
+            for (let i = 0; i < selectedSlots.length; i++) {
+                const slotA = selectedSlots[i];
+                const slotAInfo = slotMapping[slotA];
+                if (!slotAInfo || !timetableData[slotA] || timetableData[slotA][0] === 'None') continue; // Skip if no subject
+
+                for (let j = i + 1; j < selectedSlots.length; j++) {
+                    const slotB = selectedSlots[j];
+                    const slotBInfo = slotMapping[slotB];
+                    if (!slotBInfo || !timetableData[slotB] || timetableData[slotB][0] === 'None') continue; // Skip if no subject
+
+                    if (slotAInfo.day === slotBInfo.day) {
+                        if (doTimeSlotsOverlap(slotA, slotB)) {
+                            // Check if the selected subjects are actually different
+                            if (timetableData[slotA][0] !== timetableData[slotB][0]) {
+                                errors.push(`Time clash on ${slotAInfo.day}: ${slotA} (${timetableData[slotA][0].split(' - ')[0]}) conflicts with ${slotB} (${timetableData[slotB][0].split(' - ')[0]})`);
+
+                                // Determine which of the two conflicting slots was the "new" one being added
+                                const affectedByLastTheory = lastSelectedTheoryPrimarySlot ? [lastSelectedTheoryPrimarySlot, ...(slotMapping[lastSelectedTheoryPrimarySlot]?.linked || [])] : [];
+
+                                const isSlotAFromLastSelection = affectedByLastTheory.includes(slotA) || (slotA === lastSelectedLabSlot);
+                                const isSlotBFromLastSelection = affectedByLastTheory.includes(slotB) || (slotB === lastSelectedLabSlot);
+
+                                if (isSlotAFromLastSelection) {
+                                    slotsToClear.add(slotA);
+                                } else if (isSlotBFromLastSelection) {
+                                    slotsToClear.add(slotB);
+                                } else {
+                                    // Fallback: If neither was the last selection, perhaps clear the one that's currently 'active' in the loop
+                                    // or the one that's earlier in the timetable. For simplicity, we can just clear both
+                                    // or choose one (e.g., slotB as it's the 'later' one encountered in the inner loop).
+                                    // More robustly, you might need to decide which one to keep and which to clear.
+                                    // For now, we'll clear the 'new' selection and if neither is new, we'll revert to previous state for both.
+                                    // This scenario ideally shouldn't happen if `lastSelected*` is always accurately tracked for the current user action.
+                                    // If it does happen, it implies a pre-existing conflict or a complex multi-selection.
+                                    // Let's ensure if there is a last selection, it's prioritized.
+                                    if (lastSelectedTheoryPrimarySlot) {
+                                        slotsToClear.add(lastSelectedTheoryPrimarySlot);
+                                        (slotMapping[lastSelectedTheoryPrimarySlot]?.linked || []).forEach(linkedSlot => slotsToClear.add(linkedSlot));
+                                    }
+                                    if (lastSelectedLabSlot) {
+                                        slotsToClear.add(lastSelectedLabSlot);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (errors.length > 0) {
+                displayErrorModal(errors);
+                document.getElementById('errors').innerHTML = errors.map(e => `<p>${e}</p>`).join('');
+
+                slotsToClear.forEach(slotToReset => {
+                    // Reset the specific slot in timetableData to 'None'
+                    timetableData[slotToReset] = ['None', ''];
+                    // Additionally, if it's a primary theory slot, clear its linked ones too
+                    if (slotMapping[slotToReset]?.type === 'Theory' && slotMapping[slotToReset]?.linked) {
+                        slotMapping[slotToReset].linked.forEach(linkedSlot => {
+                            timetableData[linkedSlot] = ['None', ''];
+                        });
+                    }
+                });
+
+                // Reset the specific dropdowns based on which was cleared
+                if (lastSelectedTheoryPrimarySlot && slotsToClear.has(lastSelectedTheoryPrimarySlot)) {
+                    resetTheoryDropdowns(); // Reset all three theory dropdowns
+                } else if (lastSelectedLabSlot && slotsToClear.has(lastSelectedLabSlot)) {
+                    resetLabDropdown(); // Reset the lab dropdown
+                }
+                // If neither was the last selected, then a previous selection was the problem.
+                // In this case, we don't automatically reset the input dropdowns as the user didn't just make that conflicting selection.
+                // The modal and table update will show the issue.
+
+                renderTimetable(); // Re-render the timetable to reflect the changes
+
+                // Clear last selected global variables after processing
+                lastSelectedTheoryPrimarySlot = null;
+                lastSelectedLabSlot = null;
+
+                return true; // Errors found
+            }
+
+            document.getElementById('errors').innerHTML = ''; // Clear inline errors if none found
+
+            // Clear last selected global variables if no error
+            lastSelectedTheoryPrimarySlot = null;
+            lastSelectedLabSlot = null;
+
+            renderTimetable(); // Always re-render the timetable after any selection to show changes
+            return false; // No errors
+        }
+
+        function getRoomNumber(slot) {
+            return 'Room 101'; // You can enhance this to return actual room numbers
+        }
+
+        // --- renderTimetable function ---
+        function renderTimetable(modal = false) {
+            const tbody = modal ? document.getElementById('modal-timetable-body') : document.getElementById('timetable-body');
+            tbody.innerHTML = '';
+            const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+
+            if (!modal) {
+                lunchRowspanAdded = false;
+            }
+
+            days.forEach((day) => {
+                let trTheory = document.createElement('tr');
+                trTheory.className = 'theory-row';
+                trTheory.innerHTML = `<td>${day} (Theory)</td>`;
+
+                const currentDayTheorySlotKeys = Object.keys(slotMapping)
+                    .filter(slotKey => slotMapping[slotKey].day === day && slotMapping[slotKey].type === 'Theory')
+                    .sort((a, b) => slotMapping[a].timeIndex - slotMapping[b].timeIndex);
+
+                const theorySlotMap = new Map();
+                currentDayTheorySlotKeys.forEach(slotKey => {
+                    theorySlotMap.set(slotMapping[slotKey].timeIndex, slotKey);
+                });
+
+                for (let i = 1; i <= 8; i++) {
+                    if (i === 5) { // Lunch break
+                        if (!modal && !lunchRowspanAdded) {
+                            trTheory.innerHTML += `<td rowspan="10" style="vertical-align: middle;">Lunch<br>12:35-1:15</td>`;
+                            lunchRowspanAdded = true;
+                        } else if (modal) {
+                            trTheory.innerHTML += `<td>Lunch<br>12:35-1:15</td>`;
+                        }
+                    }
+
+                    const actualSlotKey = theorySlotMap.get(i);
+                    let cellContent = '';
+
+                    if (actualSlotKey) {
+                        const slotNameForDisplay = actualSlotKey.includes("-1") ? actualSlotKey.substring(0, actualSlotKey.indexOf("-1")) : actualSlotKey;
+
+                        if (timetableData[actualSlotKey] && timetableData[actualSlotKey][0] && timetableData[actualSlotKey][0] !== 'None') {
+                            // Display selected subject and faculty
+                            const [subject, faculty] = timetableData[actualSlotKey][0].split(' - ');
+                            const roomNumber = getRoomNumber(actualSlotKey);
+                            cellContent = `
+                                <span style="font-size: 12px;">${slotNameForDisplay}</span><br>
+                                <span style="font-size: 14px;">${subject}</span><br>
+                                <span style="font-size: 12px;">${faculty}</span><br>
+                                <span style="font-size: 14px;">${roomNumber}</span>
+                            `;
+                        } else {
+                            // Display just the slot name if nothing is selected or it's 'None'
+                            cellContent = `<span style="font-size: 14px;">${slotNameForDisplay}</span>`;
+                        }
+                    } else {
+                        // For time slots without a specific slotKey, display a dash
+                        cellContent = '-';
+                    }
+                    trTheory.innerHTML += `<td>${cellContent}</td>`;
+                }
+                tbody.appendChild(trTheory);
+
+                let trLab = document.createElement('tr');
+                trLab.className = 'lab-row';
+                trLab.innerHTML = `<td>${day} (Lab)</td>`;
+
+                const currentDayLabSlotKeys = Object.keys(slotMapping)
+                    .filter(slotKey => slotMapping[slotKey].day === day && slotMapping[slotKey].type === 'Lab')
+                    .sort((a, b) => slotMapping[a].timeIndex - slotMapping[b].timeIndex);
+
+                const labSlotMap = new Map(); // Map to hold all potential lab slots for the day
+                currentDayLabSlotKeys.forEach(slotKey => {
+                    labSlotMap.set(slotMapping[slotKey].timeIndex, slotKey);
+                });
+
+                const labColumnPositions = new Map();
+                labColumnPositions.set(1, 1);
+                labColumnPositions.set(3, 3);
+                labColumnPositions.set(5, 5); // Corrected to align with theory timeIndex (1pm slot)
+                labColumnPositions.set(7, 7); // Corrected to align with theory timeIndex (3pm slot)
+
+                for (let col = 1; col <= 9; col++) {
+                    if (col === 5) { // Lunch break column in the timetable grid
+                        trLab.innerHTML += modal ? `<td>Lunch<br>12:35-1:15</td>` : `<td></td>`;
+                        continue;
+                    }
+
+                    const labTimeIndex = Array.from(labColumnPositions.keys()).find(key => labColumnPositions.get(key) === col);
+
+                    if (labTimeIndex !== undefined) {
+                        const actualLabSlotKey = labSlotMap.get(labTimeIndex); // Get the actual slot key for this time index
+                        let colspanToUse = 2; // Default colspan for labs
+
+                        if (actualLabSlotKey && slotMapping[actualLabSlotKey] && typeof slotMapping[actualLabSlotKey].colspan === 'number') {
+                            colspanToUse = slotMapping[actualLabSlotKey].colspan;
+                        }
+
+                        let cellContent = '';
+                        if (actualLabSlotKey && timetableData[actualLabSlotKey] && timetableData[actualLabSlotKey][0] && timetableData[actualLabSlotKey][0] !== 'None') {
+                            const [subject, faculty] = timetableData[actualLabSlotKey][0].split(' - ');
+                            const roomNumber = getRoomNumber(actualLabSlotKey);
+                            cellContent = `
+                                <span style="font-size: 12px;">${actualLabSlotKey}</span><br>
+                                <span style="font-size: 14px;">${subject}</span><br>
+                                <span style="font-size: 12px;">${faculty}</span><br>
+                                <span style="font-size: 14px;">${roomNumber}</span>
+                            `;
+                        } else if (actualLabSlotKey) {
+                            // Display just the lab slot name if nothing is selected or it's 'None'
+                            cellContent = `<span style="font-size: 14px;">${actualLabSlotKey}</span>`;
+                        } else {
+                            cellContent = '-'; // Fallback for columns that aren't mapped to a lab slot
+                        }
+                        trLab.innerHTML += `<td colspan="${colspanToUse}">${cellContent}</td>`;
+                        col += (colspanToUse - 1); // Increment col by colspan to skip merged cells
+                    } else {
+                        trLab.innerHTML += `<td>${modal ? '-' : ''}</td>`; // Empty cell if no lab at this time and no colspan taken
+                    }
+                }
+                tbody.appendChild(trLab);
+            });
+        }
+
+        function submitTimetable() {
+            if (validateSelections()) {
+                return;
+            }
+
+            const modal = document.getElementById('modal');
+            const modalTitle = modal.querySelector('.modal-content h2');
+            const studentInfoDiv = document.getElementById('modal-student-info');
+            const timetableInModal = document.getElementById('modal-timetable');
+
+            if (modalTitle) modalTitle.textContent = 'Final Timetable';
+            if (studentInfoDiv) {
+                studentInfoDiv.innerHTML = `
+                    <p><strong>Name:</strong> ${studentName}</p>
+                    <p><strong>Enrollment Number:</strong> ${studentEnrollment}</p>
+                    <p><strong>Course:</strong> ${studentCourse}</p>
+                `;
+            }
+            if (timetableInModal) timetableInModal.style.display = '';
+
+            renderTimetable(true);
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+
+        init();
+    </script>
+</body>
+</html>
