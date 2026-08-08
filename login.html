@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TimeTable Generator - Login</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f0f0f0;
+        }
+        .login-card {
+            background: white;
+            padding: 30px 35px;
+            border: 1px solid #ccc;
+            width: 100%;
+            max-width: 380px;
+        }
+        h1 {
+            color: #333;
+            font-size: 22px;
+            margin-top: 0;
+            margin-bottom: 4px;
+            text-align: center;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 14px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #333;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #999;
+            font-size: 14px;
+        }
+        .error {
+            color: red;
+            font-size: 13px;
+            margin-bottom: 10px;
+            min-height: 16px;
+        }
+        button {
+            width: 100%;
+            padding: 10px 20px;
+            background: #0066cc;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 15px;
+            margin-top: 6px;
+        }
+        button:hover {
+            background: #0055aa;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <h1>TimeTable Generator</h1>
+        <div class="subtitle">Enter your details to continue</div>
+
+        <div id="errors" class="error"></div>
+
+        <div class="form-group">
+            <label for="student-name">Name</label>
+            <input type="text" id="student-name" placeholder="Full name">
+        </div>
+        <div class="form-group">
+            <label for="student-enrollment">Enrollment Number</label>
+            <input type="text" id="student-enrollment" placeholder="e.g. 24BECE1234">
+        </div>
+        <div class="form-group">
+            <label for="student-course">Course</label>
+            <input type="text" id="student-course" placeholder="e.g. B.Tech ECE">
+        </div>
+
+        <button onclick="handleLogin()">Continue to Timetable</button>
+    </div>
+
+    <script>
+        function handleLogin() {
+            const name = document.getElementById('student-name').value.trim();
+            const enrollment = document.getElementById('student-enrollment').value.trim();
+            const course = document.getElementById('student-course').value.trim();
+            const errorsDiv = document.getElementById('errors');
+
+            if (!name || !enrollment || !course) {
+                errorsDiv.textContent = 'Please fill in all fields.';
+                return;
+            }
+OBOBOBOBOBOB
+OBOB            errorsDiv.textContent = '';
+OBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOB
+OBOBOB            const params = new URLSearchParams({ name, enrollment, course });
+OBOBOBOB            window.location.href = `dashboard.html?${params.toString()}`;
+        }
+OBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOB
+        // Allow pressing Enter to submit
+OBOBOBOB        document.addEventListener('keydown', (e) => {
+OBOBOB            if (e.key === 'Enter') handleLogin();
+OBOB        });
+    </script>
+</body>
+</html>
