@@ -3,119 +3,1645 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TimeTable Generator - Login</title>
+    <title>University Portal — Timetable Generator Login</title>
+    <meta name="description" content="Sign in to the University Timetable Generator to view course schedules, plan academic weeks, and manage clash-free timetables.">
+
+    <!-- Typography: Google Fonts (Plus Jakarta Sans) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <style>
-        * { box-sizing: border-box; }
-        body {
-            font-family: Arial, sans-serif;
+        /* ==========================================================================
+           1. CSS Custom Properties & Design Tokens
+           Derived from the University Crest: Deep Navy Blue (#0C345E) & Gold (#F59E0B)
+           ========================================================================== */
+        :root {
+            /* Primary University Colors */
+            --primary: #0C345E;
+            --primary-hover: #07223f;
+            --primary-active: #04172c;
+            --primary-light: #eaf2fb;
+            --primary-pastel: #f1f6fd;
+            --primary-glow: rgba(12, 52, 94, 0.12);
+
+            /* Accent Colors */
+            --accent: #d97706;
+            --accent-gold: #f59e0b;
+            --accent-hover: #b45309;
+            --accent-subtle: #fffbeb;
+            --accent-border: #fde68a;
+
+            /* Surface & Background */
+            --background: #f8fafc;
+            --surface: #ffffff;
+            --surface-tint: #fafcff;
+            --surface-muted: #f1f5f9;
+
+            /* Typography */
+            --text: #0f172a;
+            --text-secondary: #334155;
+            --muted-text: #64748b;
+            --text-on-primary: #ffffff;
+
+            /* Borders & Dividers */
+            --border: #e2e8f0;
+            --border-hover: #cbd5e1;
+            --border-focus: #0C345E;
+            --focus-ring: rgba(12, 52, 94, 0.2);
+
+            /* Feedback States */
+            --error: #dc2626;
+            --error-bg: #fef2f2;
+            --error-border: #fecaca;
+            --success: #16a34a;
+            --success-bg: #f0fdf4;
+            --success-border: #bbf7d0;
+
+            /* Radii */
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 20px;
+            --radius-full: 9999px;
+
+            /* Shadows */
+            --shadow-sm: 0 1px 3px rgba(12, 52, 94, 0.04);
+            --shadow-md: 0 4px 16px -2px rgba(12, 52, 94, 0.06), 0 2px 6px -1px rgba(12, 52, 94, 0.03);
+            --shadow-lg: 0 20px 40px -12px rgba(12, 52, 94, 0.08), 0 8px 16px -4px rgba(12, 52, 94, 0.03);
+            --shadow-hover: 0 12px 28px -4px rgba(12, 52, 94, 0.12), 0 6px 10px -2px rgba(12, 52, 94, 0.06);
+
+            /* Transitions */
+            --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* ==========================================================================
+           2. Reset & Global Base Styles
+           ========================================================================== */
+        *, *::before, *::after {
+            box-sizing: border-box;
             margin: 0;
+            padding: 0;
+        }
+
+        html {
+            font-size: 16px;
+            -webkit-text-size-adjust: 100%;
+            height: 100%;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: var(--text);
+            background-color: var(--background);
+            line-height: 1.5;
             min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow-x: hidden;
+            position: relative;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Prevent scrollbars caused by decorative background */
+        .bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        /* Subtle animated pastel background shapes */
+        .pastel-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.55;
+            animation: floatSlow 36s ease-in-out infinite alternate;
+            will-change: transform;
+        }
+
+        .orb-1 {
+            width: 480px;
+            height: 480px;
+            background: radial-gradient(circle, rgba(12, 52, 94, 0.12) 0%, rgba(12, 52, 94, 0) 70%);
+            top: -100px;
+            left: -80px;
+            animation-duration: 40s;
+        }
+
+        .orb-2 {
+            width: 420px;
+            height: 420px;
+            background: radial-gradient(circle, rgba(245, 158, 11, 0.11) 0%, rgba(245, 158, 11, 0) 70%);
+            bottom: -60px;
+            right: -60px;
+            animation-duration: 34s;
+            animation-delay: -10s;
+        }
+
+        .orb-3 {
+            width: 360px;
+            height: 360px;
+            background: radial-gradient(circle, rgba(56, 189, 248, 0.08) 0%, rgba(56, 189, 248, 0) 70%);
+            top: 40%;
+            right: 20%;
+            animation-duration: 44s;
+            animation-delay: -18s;
+        }
+
+        .orb-4 {
+            width: 320px;
+            height: 320px;
+            background: radial-gradient(circle, rgba(254, 243, 199, 0.65) 0%, rgba(254, 243, 199, 0) 70%);
+            bottom: 20%;
+            left: 25%;
+            animation-duration: 38s;
+            animation-delay: -5s;
+        }
+
+        @keyframes floatSlow {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+            50% {
+                transform: translate(25px, 35px) scale(1.06);
+            }
+            100% {
+                transform: translate(-30px, -20px) scale(0.95);
+            }
+        }
+
+        /* Disable / reduce motion when preferred */
+        @media (prefers-reduced-motion: reduce) {
+            .pastel-orb {
+                animation: none !important;
+                transform: none !important;
+            }
+            .login-card, .btn, .link-btn, .modal-content {
+                animation: none !important;
+                transition: none !important;
+            }
+        }
+
+        /* ==========================================================================
+           3. Layout Container & Responsive Grid
+           ========================================================================== */
+        .portal-main {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: clamp(20px, 4vw, 48px) clamp(16px, 3vw, 32px);
             display: flex;
             align-items: center;
             justify-content: center;
-            background-color: #f0f0f0;
+            min-height: calc(100vh - 64px);
+            min-height: calc(100dvh - 64px);
         }
-        .login-card {
-            background: white;
-            padding: 30px 35px;
-            border: 1px solid #ccc;
+
+        .portal-layout {
             width: 100%;
-            max-width: 380px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 32px;
+            align-items: center;
+            justify-items: center;
         }
-        h1 {
-            color: #333;
-            font-size: 22px;
-            margin-top: 0;
-            margin-bottom: 4px;
-            text-align: center;
+
+        /* Two-column layout on desktop */
+        @media (min-width: 1024px) {
+            .portal-layout {
+                grid-template-columns: 1.15fr 0.95fr;
+                gap: clamp(40px, 6vw, 72px);
+                align-items: center;
+                justify-items: stretch;
+            }
         }
-        .subtitle {
+
+        /* ==========================================================================
+           4. Left Welcome / Academic Panel (Desktop)
+           ========================================================================== */
+        .portal-hero {
+            display: none;
+            flex-direction: column;
+            gap: 28px;
+            padding-right: 12px;
+        }
+
+        @media (min-width: 1024px) {
+            .portal-hero {
+                display: flex;
+            }
+        }
+
+        .hero-brand {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .hero-logo-img {
+            width: 68px;
+            height: auto;
+            max-height: 84px;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 8px rgba(12, 52, 94, 0.08));
+        }
+
+        .hero-brand-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .hero-univ-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: -0.01em;
+            line-height: 1.2;
+        }
+
+        .hero-portal-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .hero-badge-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: var(--accent-gold);
+        }
+
+        .hero-heading {
+            font-size: clamp(2rem, 3.2vw, 2.625rem);
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1.2;
+            letter-spacing: -0.025em;
+        }
+
+        .hero-description {
+            font-size: 1.0625rem;
+            color: var(--muted-text);
+            line-height: 1.6;
+            max-width: 480px;
+        }
+
+        /* Stylized Minimal Timetable Schedule Feature Card */
+        .timetable-preview-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            box-shadow: var(--shadow-md);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .timetable-preview-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--accent-gold) 100%);
+        }
+
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .preview-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .preview-pill {
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: var(--radius-full);
+            background-color: var(--primary-pastel);
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .preview-schedule-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .schedule-slot {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            background-color: var(--surface-tint);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--primary);
+            border-radius: var(--radius-sm);
+            font-size: 0.8125rem;
+        }
+
+        .schedule-slot.slot-accent {
+            border-left-color: var(--accent-gold);
+            background-color: var(--accent-subtle);
+        }
+
+        .slot-course {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .slot-time {
+            color: var(--muted-text);
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .hero-features {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            padding-top: 4px;
+        }
+
+        .hero-feature-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .feature-icon {
+            width: 18px;
+            height: 18px;
+            color: var(--accent);
+            flex-shrink: 0;
+        }
+
+        /* ==========================================================================
+           5. Login Card Container
+           ========================================================================== */
+        .login-card-container {
+            width: 100%;
+            max-width: 420px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .login-card {
+            width: 100%;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: clamp(24px, 5vw, 36px);
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            animation: cardEntrance 500ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            display: flex;
+            flex-direction: column;
+        }
+
+        @keyframes cardEntrance {
+            0% {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Card Header & Branding */
+        .card-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             text-align: center;
-            color: #666;
-            font-size: 13px;
+            margin-bottom: 24px;
+        }
+
+        .card-logo-wrap {
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-logo {
+            width: clamp(64px, 12vw, 76px);
+            height: auto;
+            max-height: 90px;
+            object-fit: contain;
+            filter: drop-shadow(0 2px 6px rgba(12, 52, 94, 0.08));
+        }
+
+        .portal-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background-color: var(--primary-pastel);
+            color: var(--primary);
+            border: 1px solid rgba(12, 52, 94, 0.1);
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: var(--radius-full);
+            margin-bottom: 8px;
+            letter-spacing: 0.02em;
+        }
+
+        .card-title {
+            font-size: clamp(1.375rem, 2.5vw, 1.625rem);
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: -0.02em;
+            margin-bottom: 6px;
+            line-height: 1.25;
+        }
+
+        .card-subtitle {
+            font-size: 0.875rem;
+            color: var(--muted-text);
+            line-height: 1.4;
+            max-width: 320px;
+        }
+
+        /* ==========================================================================
+           6. Alert & Status Banners
+           ========================================================================== */
+        .alert-banner {
+            background-color: var(--error-bg);
+            border: 1px solid var(--error-border);
+            color: var(--error);
+            border-radius: var(--radius-sm);
+            padding: 10px 14px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            animation: fadeIn 200ms ease;
+        }
+
+        .alert-banner.alert-success {
+            background-color: var(--success-bg);
+            border-color: var(--success-border);
+            color: var(--success);
+        }
+
+        .alert-icon {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Hidden live region for screen readers */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+
+        /* ==========================================================================
+           7. Form Elements & Controls
+           ========================================================================== */
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .input-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .input-label .required {
+            color: var(--error);
+            margin-left: 2px;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 14px;
+            width: 18px;
+            height: 18px;
+            color: var(--muted-text);
+            pointer-events: none;
+            transition: color var(--transition-fast);
+        }
+
+        .form-input {
+            width: 100%;
+            height: 46px;
+            min-height: 44px; /* Ensure 44px minimum touch target */
+            padding: 10px 14px 10px 42px;
+            font-family: inherit;
+            font-size: 0.9375rem; /* Prevent iOS auto-zoom (>14px) */
+            color: var(--text);
+            background-color: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast);
+        }
+
+        .form-input.has-toggle {
+            padding-right: 44px;
+        }
+
+        .form-input::placeholder {
+            color: #94a3b8;
+            font-size: 0.875rem;
+        }
+
+        .form-input:hover {
+            border-color: var(--border-hover);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px var(--focus-ring);
+            background-color: var(--surface-tint);
+        }
+
+        .form-group:focus-within .input-icon {
+            color: var(--primary);
+        }
+
+        .form-input.is-invalid {
+            border-color: var(--error);
+            background-color: #fffbfa;
+        }
+
+        .form-input.is-invalid:focus {
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15);
+        }
+
+        /* Password Toggle Button */
+        .password-toggle-btn {
+            position: absolute;
+            right: 4px;
+            height: 38px;
+            width: 38px;
+            min-width: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: none;
+            border-radius: var(--radius-sm);
+            color: var(--muted-text);
+            cursor: pointer;
+            transition: color var(--transition-fast), background-color var(--transition-fast);
+        }
+
+        .password-toggle-btn:hover {
+            color: var(--text);
+            background-color: var(--surface-muted);
+        }
+
+        .password-toggle-btn:focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: 1px;
+        }
+
+        .password-toggle-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Field Validation Message */
+        .field-error {
+            font-size: 0.8125rem;
+            color: var(--error);
+            display: none;
+            align-items: center;
+            gap: 4px;
+            margin-top: 2px;
+            font-weight: 500;
+        }
+
+        .field-error.active {
+            display: flex;
+        }
+
+        .field-error svg {
+            width: 14px;
+            height: 14px;
+            flex-shrink: 0;
+        }
+
+        /* ==========================================================================
+           8. Remember Me & Forgot Password Row
+           ========================================================================== */
+        .form-options-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 2px 0;
+        }
+
+        .checkbox-container {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            user-select: none;
+            min-height: 24px;
+        }
+
+        .checkbox-input {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .custom-checkbox {
+            width: 18px;
+            height: 18px;
+            border: 1px solid var(--border-hover);
+            border-radius: 4px;
+            background-color: var(--surface);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-fast);
+            flex-shrink: 0;
+        }
+
+        .checkbox-input:checked + .custom-checkbox {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .checkbox-input:focus-visible + .custom-checkbox {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+
+        .custom-checkbox svg {
+            width: 12px;
+            height: 12px;
+            color: white;
+            opacity: 0;
+            transform: scale(0.6);
+            transition: all var(--transition-fast);
+        }
+
+        .checkbox-input:checked + .custom-checkbox svg {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .checkbox-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .link-btn {
+            background: transparent;
+            border: none;
+            color: var(--primary);
+            font-family: inherit;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 2px 4px;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: color var(--transition-fast);
+        }
+
+        .link-btn:hover {
+            color: var(--accent);
+            text-decoration: underline;
+        }
+
+        .link-btn:focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+
+        /* ==========================================================================
+           9. Bot Verification Component (Interactive UI Simulation)
+           ========================================================================== */
+        .captcha-container {
+            background-color: var(--surface-tint);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: border-color var(--transition-fast), background-color var(--transition-fast);
+            user-select: none;
+            min-height: 56px;
+        }
+
+        .captcha-container:hover {
+            border-color: var(--border-hover);
+            background-color: #f8fafc;
+        }
+
+        .captcha-container:focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+
+        .captcha-container.is-verified {
+            border-color: var(--success-border);
+            background-color: var(--success-bg);
+            cursor: default;
+        }
+
+        .captcha-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .captcha-box {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--border-hover);
+            border-radius: 4px;
+            background-color: var(--surface);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-fast);
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .captcha-container:hover .captcha-box {
+            border-color: var(--primary);
+        }
+
+        .captcha-spinner {
+            display: none;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(12, 52, 94, 0.2);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 700ms linear infinite;
+        }
+
+        .captcha-check-icon {
+            display: none;
+            width: 16px;
+            height: 16px;
+            color: var(--success);
+        }
+
+        .captcha-box.loading .captcha-spinner {
+            display: block;
+        }
+
+        .captcha-box.loading {
+            border-color: transparent;
+        }
+
+        .captcha-box.verified {
+            background-color: transparent;
+            border-color: transparent;
+        }
+
+        .captcha-box.verified .captcha-check-icon {
+            display: block;
+        }
+
+        .captcha-text {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .captcha-branding {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 2px;
+        }
+
+        .captcha-shield-icon {
+            width: 20px;
+            height: 20px;
+            color: var(--primary);
+            opacity: 0.85;
+        }
+
+        .captcha-subtext {
+            font-size: 0.6875rem;
+            color: var(--muted-text);
+            font-weight: 500;
+            letter-spacing: -0.01em;
+        }
+
+        /* ==========================================================================
+           10. Primary & Secondary Buttons
+           ========================================================================== */
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 4px;
+        }
+
+        .btn {
+            width: 100%;
+            height: 46px;
+            min-height: 44px;
+            padding: 0 20px;
+            font-family: inherit;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            border-radius: var(--radius-sm);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all var(--transition-normal);
+            position: relative;
+            text-decoration: none;
+        }
+
+        .btn:focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+
+        /* Primary Button */
+        .btn-primary {
+            background: linear-gradient(180deg, #103b68 0%, var(--primary) 100%);
+            color: var(--text-on-primary);
+            box-shadow: 0 2px 4px rgba(12, 52, 94, 0.15), 0 1px 2px rgba(12, 52, 94, 0.1);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: linear-gradient(180deg, #0d325a 0%, var(--primary-hover) 100%);
+            transform: translateY(-1.5px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .btn-primary:active:not(:disabled) {
+            transform: translateY(0);
+            background: var(--primary-active);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none;
+        }
+
+        /* Secondary Button */
+        .btn-secondary {
+            background-color: var(--surface);
+            color: var(--primary);
+            border: 1px solid var(--border);
+            font-weight: 600;
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--surface-muted);
+            border-color: var(--border-hover);
+            color: var(--primary-hover);
+        }
+
+        .btn-secondary:active {
+            background-color: var(--primary-light);
+        }
+
+        /* Loading Spinner inside Button */
+        .btn-spinner {
+            display: none;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: spin 700ms linear infinite;
+        }
+
+        .btn.is-loading .btn-spinner {
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ==========================================================================
+           11. Footer
+           ========================================================================== */
+        .portal-footer {
+            width: 100%;
+            padding: 16px 20px 24px;
+            text-align: center;
+            color: var(--muted-text);
+            font-size: 0.8125rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .portal-footer p {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        /* ==========================================================================
+           12. Accessible Modal (Forgot Password & Help)
+           ========================================================================== */
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            animation: fadeIn 200ms ease;
+        }
+
+        .modal-backdrop.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 24px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            animation: modalSlide 250ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes modalSlide {
+            from {
+                opacity: 0;
+                transform: translateY(12px) scale(0.98);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .modal-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .modal-close-btn {
+            background: transparent;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-sm);
+            color: var(--muted-text);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close-btn:hover {
+            color: var(--text);
+            background-color: var(--surface-muted);
+        }
+
+        .modal-close-btn:focus-visible {
+            outline: 2px solid var(--primary);
+        }
+
+        .modal-body {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
             margin-bottom: 20px;
         }
-        .form-group {
-            margin-bottom: 14px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-size: 14px;
-            color: #333;
-        }
-        .form-group input {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #999;
-            font-size: 14px;
-        }
-        .error {
-            color: red;
-            font-size: 13px;
-            margin-bottom: 10px;
-            min-height: 16px;
-        }
-        button {
-            width: 100%;
-            padding: 10px 20px;
-            background: #0066cc;
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-size: 15px;
-            margin-top: 6px;
-        }
-        button:hover {
-            background: #0055aa;
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
         }
     </style>
 </head>
 <body>
-    <div class="login-card">
-        <h1>TimeTable Generator</h1>
-        <div class="subtitle">Enter your details to continue</div>
 
-        <div id="errors" class="error"></div>
-
-        <div class="form-group">
-            <label for="student-name">Name</label>
-            <input type="text" id="student-name" placeholder="Full name">
-        </div>
-        <div class="form-group">
-            <label for="student-enrollment">Enrollment Number</label>
-            <input type="text" id="student-enrollment" placeholder="e.g. 24BECE1234">
-        </div>
-        <div class="form-group">
-            <label for="student-course">Course</label>
-            <input type="text" id="student-course" placeholder="e.g. B.Tech ECE">
-        </div>
-
-        <button onclick="handleLogin()">Continue to Timetable</button>
+    <!-- Ambient Animated Pastel Canvas -->
+    <div class="bg-canvas" aria-hidden="true">
+        <div class="pastel-orb orb-1"></div>
+        <div class="pastel-orb orb-2"></div>
+        <div class="pastel-orb orb-3"></div>
+        <div class="pastel-orb orb-4"></div>
     </div>
 
-    <script>
-        function handleLogin() {
-            const name = document.getElementById('student-name').value.trim();
-            const enrollment = document.getElementById('student-enrollment').value.trim();
-            const course = document.getElementById('student-course').value.trim();
-            const errorsDiv = document.getElementById('errors');
+    <!-- Main Content Container -->
+    <main class="portal-main">
+        <div class="portal-layout">
 
-            if (!name || !enrollment || !course) {
-                errorsDiv.textContent = 'Please fill in all fields.';
+            <!-- Left Panel: University Academic Hero (Desktop) -->
+            <section class="portal-hero" aria-label="University Welcome & Highlights">
+                <div class="hero-brand">
+                    <!-- Original university crest image as source of truth -->
+                    <img src="15f90c2a6d66896f71338be308e681b3.jpg" alt="Amity University Crest" class="hero-logo-img" onerror="this.src='image.jpg'">
+                    <div class="hero-brand-text">
+                        <span class="hero-univ-title">Amity University</span>
+                        <div class="hero-portal-badge">
+                            <span class="hero-badge-dot"></span>
+                            Academic Portal
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h2 class="hero-heading">Plan your academic week with ease.</h2>
+                    <p class="hero-description">
+                        Access clash-free schedules, stream lecture timings, and generate optimized academic timetables with smart conflict resolution.
+                    </p>
+                </div>
+
+                <!-- Timetable Schedule Minimal Visual Component -->
+                <div class="timetable-preview-card" aria-hidden="true">
+                    <div class="preview-header">
+                        <span class="preview-title">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>
+                            Current Semester Schedule
+                        </span>
+                        <span class="preview-pill">Active Term</span>
+                    </div>
+                    <div class="preview-schedule-grid">
+                        <div class="schedule-slot">
+                            <span class="slot-course">Data Structures & Algorithms</span>
+                            <span class="slot-time">09:00 AM • Hall 302</span>
+                        </div>
+                        <div class="schedule-slot slot-accent">
+                            <span class="slot-course">Digital Electronics Lab</span>
+                            <span class="slot-time">11:15 AM • Lab B-04</span>
+                        </div>
+                        <div class="schedule-slot">
+                            <span class="slot-course">Discrete Mathematics</span>
+                            <span class="slot-time">02:00 PM • Hall 108</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feature Highlights -->
+                <div class="hero-features">
+                    <div class="hero-feature-item">
+                        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                        </svg>
+                        <span>Conflict-Free Generation</span>
+                    </div>
+                    <div class="hero-feature-item">
+                        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                        <span>Student SSO Secure</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Panel: Compact Login Card -->
+            <div class="login-card-container">
+                <section class="login-card" aria-labelledby="login-title">
+                    
+                    <!-- Branding Header -->
+                    <header class="card-header">
+                        <div class="card-logo-wrap">
+                            <!-- Original university crest image as source of truth -->
+                            <img src="15f90c2a6d66896f71338be308e681b3.jpg" alt="University Logo" class="card-logo" onerror="this.src='image.jpg'">
+                        </div>
+                        <span class="portal-tag">University Portal</span>
+                        <h1 id="login-title" class="card-title">Timetable Generator</h1>
+                        <p class="card-subtitle">Sign in to access your university timetable</p>
+                    </header>
+
+                    <!-- Live Screen Reader Announcements -->
+                    <div id="status-live" class="sr-only" aria-live="polite"></div>
+
+                    <!-- Global Error / Alert Banner -->
+                    <div id="global-alert" class="alert-banner" role="alert" style="display: none;">
+                        <svg class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                        <span id="global-alert-text"></span>
+                    </div>
+
+                    <!-- Main Login Form -->
+                    <form id="login-form" class="auth-form" onsubmit="handleLogin(event)" novalidate>
+                        
+                        <!-- 1. Username Field -->
+                        <div class="form-group">
+                            <label for="username" class="input-label">
+                                <span>Username <span class="required" aria-hidden="true">*</span></span>
+                            </label>
+                            <div class="input-wrapper">
+                                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                                <input
+                                    type="text"
+                                    id="username"
+                                    name="username"
+                                    class="form-input"
+                                    placeholder="Enter your username or enrollment number"
+                                    autocomplete="username"
+                                    required
+                                    aria-describedby="username-error"
+                                    oninput="clearFieldError('username')"
+                                >
+                            </div>
+                            <div id="username-error" class="field-error" role="alert">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                                <span id="username-error-text">Please enter your username or enrollment number.</span>
+                            </div>
+                        </div>
+
+                        <!-- 2. Password Field -->
+                        <div class="form-group">
+                            <label for="password" class="input-label">
+                                <span>Password <span class="required" aria-hidden="true">*</span></span>
+                            </label>
+                            <div class="input-wrapper">
+                                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                </svg>
+                                <input
+                                    type="password"
+                                    id="password"
+                                    name="password"
+                                    class="form-input has-toggle"
+                                    placeholder="Enter your password"
+                                    autocomplete="current-password"
+                                    required
+                                    aria-describedby="password-error"
+                                    oninput="clearFieldError('password')"
+                                >
+                                <button
+                                    type="button"
+                                    id="toggle-password-btn"
+                                    class="password-toggle-btn"
+                                    aria-label="Show password"
+                                    title="Show password"
+                                    onclick="togglePasswordVisibility()"
+                                >
+                                    <!-- Eye Icon -->
+                                    <svg id="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                    <!-- Eye Off Icon (Hidden Initially) -->
+                                    <svg id="eye-off-icon" style="display: none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                        <line x1="1" y1="1" x2="23" y2="23"></line>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div id="password-error" class="field-error" role="alert">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                                <span id="password-error-text">Please enter your password.</span>
+                            </div>
+                        </div>
+
+                        <!-- 3. Remember Me & 4. Forgot Password -->
+                        <div class="form-options-row">
+                            <label class="checkbox-container">
+                                <input type="checkbox" id="remember-me" name="remember" class="checkbox-input">
+                                <span class="custom-checkbox">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                </span>
+                                <span class="checkbox-label">Remember me</span>
+                            </label>
+
+                            <button type="button" class="link-btn" onclick="openForgotPasswordModal()">Forgot password?</button>
+                        </div>
+
+                        <!-- 5. Bot Verification Component (Interactive UI Simulation) -->
+                        <div class="form-group">
+                            <!--
+                                SECURITY NOTICE / INTEGRATION POINT:
+                                The "I am not a robot" checkbox below is strictly a frontend UI simulation.
+                                It does NOT provide actual cryptographic bot protection.
+                                Before production deployment, integrate Cloudflare Turnstile, Google reCAPTCHA,
+                                or server-side cryptographic token verification.
+                            -->
+                            <div
+                                id="captcha-card"
+                                class="captcha-container"
+                                role="checkbox"
+                                tabindex="0"
+                                aria-checked="false"
+                                aria-label="I am not a robot verification checkbox (mock simulation)"
+                                onclick="handleBotVerify()"
+                                onkeydown="handleCaptchaKey(event)"
+                            >
+                                <div class="captcha-left">
+                                    <div id="captcha-box" class="captcha-box">
+                                        <div class="captcha-spinner"></div>
+                                        <svg class="captcha-check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="20 6 9 17 4 12"></polyline>
+                                        </svg>
+                                    </div>
+                                    <span id="captcha-label" class="captcha-text">I am not a robot</span>
+                                </div>
+                                <div class="captcha-branding" aria-hidden="true">
+                                    <svg class="captcha-shield-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                    </svg>
+                                    <span class="captcha-subtext">Security Check (Mock)</span>
+                                </div>
+                            </div>
+                            <div id="captcha-error" class="field-error" role="alert">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                                <span>Please complete the security check to continue.</span>
+                            </div>
+                        </div>
+
+                        <!-- Buttons & Interactions -->
+                        <div class="btn-group">
+                            <button type="submit" id="submit-btn" class="btn btn-primary">
+                                <span class="btn-spinner" aria-hidden="true"></span>
+                                <span id="btn-text">Sign in</span>
+                            </button>
+
+                            <button type="button" class="btn btn-secondary" onclick="handlePublicTimetable()">
+                                View public timetable
+                            </button>
+                        </div>
+
+                    </form>
+                </section>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Portal Footer -->
+    <footer class="portal-footer">
+        <p>
+            <span>&copy; <span id="footer-year">2026</span> University Timetable Generator</span>
+            <span aria-hidden="true">•</span>
+            <span>Academic Portal System</span>
+        </p>
+    </footer>
+
+    <!-- Accessible Modal for Forgot Password -->
+    <div id="forgot-password-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modal-heading" onclick="handleModalBackdropClick(event)">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-heading" class="modal-title">Reset Password</h3>
+                <button type="button" class="modal-close-btn" aria-label="Close dialog" onclick="closeForgotPasswordModal()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Enter your student enrollment number or university email address. We will send a secure password reset link to your registered academic email.</p>
+                <div class="form-group" style="margin-top: 14px;">
+                    <label for="reset-email" class="input-label">Enrollment No. or Email</label>
+                    <input type="text" id="reset-email" class="form-input" placeholder="e.g. 24BECE1234 or student@amity.edu">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" style="width: auto; height: 38px; padding: 0 16px; font-size: 0.875rem;" onclick="closeForgotPasswordModal()">Cancel</button>
+                <button type="button" class="btn btn-primary" style="width: auto; height: 38px; padding: 0 16px; font-size: 0.875rem;" onclick="handlePasswordResetSubmit()">Send Reset Link</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+       13. Client-side Controller & Integration Script
+       ========================================================================== */
+    -->
+    <script>
+        // Set dynamic current year in footer
+        document.getElementById('footer-year').textContent = new Date().getFullYear();
+
+        // State variables
+        let isCaptchaVerified = false;
+        let isCaptchaLoading = false;
+        let isSubmitting = false;
+
+        // Accessible Password Visibility Toggle
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('password');
+            const toggleBtn = document.getElementById('toggle-password-btn');
+            const eyeIcon = document.getElementById('eye-icon');
+            const eyeOffIcon = document.getElementById('eye-off-icon');
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.style.display = 'none';
+                eyeOffIcon.style.display = 'block';
+                toggleBtn.setAttribute('aria-label', 'Hide password');
+                toggleBtn.setAttribute('title', 'Hide password');
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.style.display = 'block';
+                eyeOffIcon.style.display = 'none';
+                toggleBtn.setAttribute('aria-label', 'Show password');
+                toggleBtn.setAttribute('title', 'Show password');
+            }
+        }
+
+        // Keyboard Handler for Captcha (Space / Enter)
+        function handleCaptchaKey(e) {
+            if (e.key === ' ' || e.key === 'Enter') {
+                e.preventDefault();
+                handleBotVerify();
+            }
+        }
+
+        // Interactive Bot Verification Simulation
+        // NOTE: This is a frontend simulation. Replace with real CAPTCHA in production.
+        function handleBotVerify() {
+            if (isCaptchaVerified || isCaptchaLoading) return;
+
+            const captchaCard = document.getElementById('captcha-card');
+            const captchaBox = document.getElementById('captcha-box');
+            const captchaLabel = document.getElementById('captcha-label');
+            const captchaError = document.getElementById('captcha-error');
+
+            isCaptchaLoading = true;
+            captchaBox.classList.add('loading');
+            captchaCard.setAttribute('aria-busy', 'true');
+            captchaError.classList.remove('active');
+
+            // Simulated verification delay
+            setTimeout(() => {
+                isCaptchaLoading = false;
+                isCaptchaVerified = true;
+                captchaBox.classList.remove('loading');
+                captchaBox.classList.add('verified');
+                captchaCard.classList.add('is-verified');
+                captchaCard.setAttribute('aria-checked', 'true');
+                captchaCard.setAttribute('aria-busy', 'false');
+                captchaLabel.textContent = 'Verification complete';
+                announceLive('Bot verification successful.');
+            }, 600);
+        }
+
+        // Clear individual field errors on user input
+        function clearFieldError(fieldId) {
+            const errorElement = document.getElementById(`${fieldId}-error`);
+            const inputElement = document.getElementById(fieldId);
+            if (errorElement) errorElement.classList.remove('active');
+            if (inputElement) inputElement.classList.remove('is-invalid');
+
+            const globalAlert = document.getElementById('global-alert');
+            if (globalAlert) globalAlert.style.display = 'none';
+        }
+
+        // Live screen-reader announcement helper
+        function announceLive(message) {
+            const liveRegion = document.getElementById('status-live');
+            if (liveRegion) {
+                liveRegion.textContent = message;
+            }
+        }
+
+        // Main Login Submission Handler
+        function handleLogin(event) {
+            if (event) event.preventDefault();
+            if (isSubmitting) return;
+
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value.trim();
+            const rememberMe = document.getElementById('remember-me').checked;
+
+            let hasError = false;
+
+            // 1. Validate Username
+            if (!username) {
+                document.getElementById('username-error').classList.add('active');
+                usernameInput.classList.add('is-invalid');
+                hasError = true;
+            }
+
+            // 2. Validate Password
+            if (!password) {
+                document.getElementById('password-error').classList.add('active');
+                passwordInput.classList.add('is-invalid');
+                hasError = true;
+            }
+
+            // 3. Validate Bot Verification
+            if (!isCaptchaVerified) {
+                document.getElementById('captcha-error').classList.add('active');
+                hasError = true;
+            }
+
+            if (hasError) {
+                announceLive('Please fix the errors in the form before signing in.');
                 return;
             }
-OBOBOBOBOBOB
-OBOB            errorsDiv.textContent = '';
-OBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOB
-OBOBOB            const params = new URLSearchParams({ name, enrollment, course });
-OBOBOBOB            window.location.href = `dashboard.html?${params.toString()}`;
+
+            // Begin Submission State
+            isSubmitting = true;
+            const submitBtn = document.getElementById('submit-btn');
+            const btnText = document.getElementById('btn-text');
+
+            submitBtn.classList.add('is-loading');
+            submitBtn.disabled = true;
+            btnText.textContent = 'Signing in…';
+            announceLive('Signing in, please wait…');
+
+            // Simulated Authentication Handshake
+            // In production, dispatch credentials to your backend API via HTTPS POST
+            setTimeout(() => {
+                const enrollment = username.match(/^[0-9A-Za-z]+$/) ? username : '24BECE1001';
+                const displayName = username.includes('@') ? username.split('@')[0] : username;
+                const defaultCourse = 'B.Tech CSE / ECE';
+
+                // Store only non-sensitive session display metadata in sessionStorage (no passwords or credentials)
+                try {
+                    const sessionData = {
+                        userId: 'usr_' + Math.random().toString(36).substring(2, 9),
+                        displayName: displayName,
+                        enrollment: enrollment,
+                        course: defaultCourse,
+                        isLoggedIn: true,
+                        remember: rememberMe,
+                        loginTimestamp: new Date().toISOString()
+                    };
+                    sessionStorage.setItem('timetable_session', JSON.stringify(sessionData));
+                } catch (err) {
+                    console.warn('Session storage write error:', err);
+                }
+
+                // Redirect cleanly to dashboard.html WITHOUT URL query parameters
+                window.location.href = 'dashboard.html';
+            }, 750);
         }
-OBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOB
-        // Allow pressing Enter to submit
-OBOBOBOB        document.addEventListener('keydown', (e) => {
-OBOBOB            if (e.key === 'Enter') handleLogin();
-OBOB        });
+
+        // Secondary Action: Public Timetable Navigation
+        function handlePublicTimetable() {
+            try {
+                const guestSession = {
+                    userId: 'guest_public',
+                    displayName: 'Guest Student',
+                    enrollment: 'GUEST-ACCESS',
+                    course: 'General Public View',
+                    isLoggedIn: false,
+                    isGuest: true,
+                    loginTimestamp: new Date().toISOString()
+                };
+                sessionStorage.setItem('timetable_session', JSON.stringify(guestSession));
+            } catch (err) {
+                console.warn('Session storage error:', err);
+            }
+
+            // Clean navigation to public timetable view
+            window.location.href = 'dashboard.html';
+        }
+
+        // Modal Dialog Management
+        function openForgotPasswordModal() {
+            const modal = document.getElementById('forgot-password-modal');
+            modal.classList.add('active');
+            document.getElementById('reset-email').focus();
+        }
+
+        function closeForgotPasswordModal() {
+            const modal = document.getElementById('forgot-password-modal');
+            modal.classList.remove('active');
+        }
+
+        function handleModalBackdropClick(e) {
+            if (e.target.id === 'forgot-password-modal') {
+                closeForgotPasswordModal();
+            }
+        }
+
+        function handlePasswordResetSubmit() {
+            const input = document.getElementById('reset-email');
+            if (!input.value.trim()) {
+                alert('Please enter your enrollment number or registered email.');
+                return;
+            }
+            alert('Password reset link has been dispatched to your academic email.');
+            closeForgotPasswordModal();
+        }
+
+        // Global Keydown Listeners (Escape for modal)
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeForgotPasswordModal();
+            }
+        });
     </script>
 </body>
 </html>

@@ -200,11 +200,22 @@
     </div>
 
     <script>
-        // --- Auth guard: pull student info from the URL that login.html sent us ---
+        // --- Auth guard: pull non-sensitive student session data from sessionStorage ---
+        let studentSession = null;
+        try {
+            const rawSession = sessionStorage.getItem('timetable_session');
+            if (rawSession) {
+                studentSession = JSON.parse(rawSession);
+            }
+        } catch (e) {
+            console.warn('Unable to parse session storage:', e);
+        }
+
+        // Fallback to legacy URL parameters if opened with query params
         const urlParams = new URLSearchParams(window.location.search);
-        const studentName = urlParams.get('name');
-        const studentEnrollment = urlParams.get('enrollment');
-        const studentCourse = urlParams.get('course');
+        const studentName = (studentSession && studentSession.displayName) || urlParams.get('name');
+        const studentEnrollment = (studentSession && studentSession.enrollment) || urlParams.get('enrollment');
+        const studentCourse = (studentSession && studentSession.course) || urlParams.get('course');
 
         if (!studentName || !studentEnrollment || !studentCourse) {
             // No student info present - bounce back to login
@@ -212,6 +223,9 @@
         }
 
         function logout() {
+            try {
+                sessionStorage.removeItem('timetable_session');
+            } catch (e) {}
             window.location.href = 'login.html';
         }
 
